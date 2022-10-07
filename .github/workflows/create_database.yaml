@@ -1,0 +1,52 @@
+name: Create database
+
+on:
+  workflow_call:
+    inputs:
+      project_number:
+        required: true
+        type: string
+      workload_identity_pool:
+        required: true
+        type: string
+      workload_identity_provider:
+        required: true
+        type: string
+      service_account:
+        required: true
+        type: string
+      database_name:
+        required: true
+        type: string
+      
+    secrets:
+      token:
+        required: true
+
+jobs:
+  create_database:
+    runs-on: ubuntu-latest
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      
+    steps:
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        workload_identity_provider: 'projects/${{ inputs.project_number }}/locations/global/workloadIdentityPools/${{ inputs.workload_identity_pool }}/providers/${{ inputs.workload_identity_provider }}'
+        service_account: ${{ inputs.service_account }}
+        audience: 'google-wlif'
+
+    # Install gcloud, `setup-gcloud` automatically picks up authentication from `auth`.
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v0'
+
+    - name: 'test'
+      run: |-
+        wget -q https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
+        chmod +x cloud_sql_proxy
+        ./cloud_sql_proxy -enable_iam_login -instances=impactful-mode-268210:us-central1:${{ inputs.instance }}=tcp:5432 &
+        gcloud sql databases create ${{ inputs.database_name }} --instance=${{ inputs.instance }}
