@@ -15,6 +15,9 @@ on:
       service_account:
         required: true
         type: string
+      cloudsql_instance:
+        required: true
+        type: string
       database_name:
         required: true
         type: string
@@ -48,5 +51,5 @@ jobs:
       run: |-
         wget -q https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
         chmod +x cloud_sql_proxy
-        ./cloud_sql_proxy -enable_iam_login -instances=impactful-mode-268210:us-central1:${{ inputs.instance }}=tcp:5432 &
-        gcloud sql databases create ${{ inputs.database_name }} --instance=${{ inputs.instance }}
+        ./cloud_sql_proxy -enable_iam_login -instances=impactful-mode-268210:us-central1:${{ inputs.cloudsql_instance }}=tcp:5432 &
+        gcloud sql databases create ${{ inputs.database_name }} --instance=${{ inputs.cloudsql_instance }}
