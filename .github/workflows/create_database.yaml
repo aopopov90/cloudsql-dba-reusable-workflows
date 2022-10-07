@@ -21,10 +21,6 @@ on:
       database_name:
         required: true
         type: string
-      
-    secrets:
-      token:
-        required: true
 
 jobs:
   create_database:
